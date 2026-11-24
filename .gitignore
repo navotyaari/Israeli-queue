@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+env/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Build output
+build/
+
+# Private notes
+.notes/
+
+# Claude Code local settings
+.claude/settings.local.json
