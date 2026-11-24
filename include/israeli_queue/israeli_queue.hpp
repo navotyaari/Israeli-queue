@@ -85,11 +85,14 @@ public:
     }
 
     std::optional<T> dequeue() {
-        return std::nullopt; // implemented in IQ-6b
+        if (!group_head_) return std::nullopt;
+        T value = std::move(group_head_->elem_head->value);
+        remove_front_element();
+        return value;
     }
 
     void pop() {
-        // implemented in IQ-6b
+        remove_front_element();
     }
 
     const T& front() const {
@@ -137,6 +140,27 @@ private:
 
     bool group_is_full(const GroupNode* group) const noexcept {
         return max_group_size_ != unlimited && group->size >= max_group_size_;
+    }
+
+    void remove_front_element() {
+        GroupNode*   group    = group_head_;
+        ElementNode* old_elem = group->elem_head;
+        group->elem_head = old_elem->next;
+        --group->size;
+        delete old_elem;
+        --total_size_;
+
+        if (!group->elem_head) {
+            // Only evict from the index if this group is still the current one for its key.
+            // A full group may have already been replaced in the index by its overflow successor.
+            auto it = group_index_.find(group->key);
+            if (it != group_index_.end() && it->second == group) {
+                group_index_.erase(it);
+            }
+            group_head_ = group->next_group;
+            if (!group_head_) group_tail_ = nullptr;
+            delete group;
+        }
     }
 };
 
