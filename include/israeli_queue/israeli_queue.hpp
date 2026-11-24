@@ -61,7 +61,27 @@ public:
     IsraeliQueue& operator=(const IsraeliQueue&) = delete;
 
     void enqueue(T value) {
-        (void)value; // implemented in IQ-5b
+        key_type key = key_extractor_(static_cast<const T&>(value));
+
+        auto it = group_index_.find(key);
+        if (it != group_index_.end() && !group_is_full(it->second)) {
+            GroupNode* group    = it->second;
+            ElementNode* node   = new ElementNode(std::move(value));
+            group->elem_tail->next = node;
+            group->elem_tail       = node;
+            ++group->size;
+        } else {
+            ElementNode* node  = new ElementNode(std::move(value));
+            GroupNode*   group = new GroupNode(std::move(key), node);
+            if (group_tail_) {
+                group_tail_->next_group = group;
+            } else {
+                group_head_ = group;
+            }
+            group_tail_          = group;
+            group_index_[group->key] = group;
+        }
+        ++total_size_;
     }
 
     std::optional<T> dequeue() {
