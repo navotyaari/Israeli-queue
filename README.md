@@ -11,7 +11,7 @@ An Israeli Queue is a queue in which each arriving element scans for a known pee
 include/israeli_queue/israeli_queue.hpp  →  your project's include path
 ```
 
-**Or via CMake FetchContent:**
+**Or via CMake FetchContent** (CMake 3.14+, C++17 required):
 ```cmake
 include(FetchContent)
 FetchContent_Declare(
@@ -19,6 +19,9 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/NavotYaari/israelic_queue.git
     GIT_TAG        main
 )
+# Disable the library's own tests and benchmarks
+set(IQ_BUILD_TESTS      OFF CACHE BOOL "" FORCE)
+set(IQ_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(israeli_queue)
 target_link_libraries(your_target PRIVATE israeli_queue)
 ```
@@ -26,6 +29,8 @@ target_link_libraries(your_target PRIVATE israeli_queue)
 ## Usage
 
 ```cpp
+#include <iostream>
+#include <string>
 #include <israeli_queue/israeli_queue.hpp>
 
 struct Task { int tenant_id; std::string payload; };
@@ -40,9 +45,10 @@ q.enqueue(Task{2, "b"});
 q.enqueue(Task{1, "c"});  // joins tenant-1 group
 
 // Dequeue order: {1,"a"}, {1,"c"}, {2,"b"}
+// A plain FIFO would yield: {1,"a"}, {2,"b"}, {1,"c"}
 while (!q.empty()) {
     auto task = q.dequeue();  // returns std::optional<Task>
-    process(*task);
+    std::cout << task->tenant_id << " " << task->payload << "\n";
 }
 ```
 
@@ -82,13 +88,8 @@ iq::IsraeliQueue<Task, decltype(key)> q(key, /*max_group_size=*/10);
 ## Key type requirements
 
 The type returned by the key extractor must be:
-- Hashable via `std::hash` (or a custom hash passed as a third template parameter)
+- Hashable via `std::hash`
 - Equality-comparable via `std::equal_to`
-
-```cpp
-// Custom hash example
-iq::IsraeliQueue<Task, decltype(key), MyHash> q(key);
-```
 
 ## Thread safety
 
