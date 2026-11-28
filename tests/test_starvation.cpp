@@ -98,3 +98,29 @@ TEST_CASE("StarvationPrevention: lone task eventually dequeued when capped", "[S
     REQUIRE(*q.dequeue() == 4);
     REQUIRE(*q.dequeue() == 7);
 }
+
+TEST_CASE("StarvationPrevention: unlimited constant equals zero", "[StarvationPrevention]") {
+    REQUIRE(QueueCap::unlimited == 0);
+}
+
+TEST_CASE("StarvationPrevention: max_group_size 0 explicit keeps all same-key elements in one group", "[StarvationPrevention]") {
+    QueueCap q(mod3, 0);  // 0 == unlimited
+    for (int i = 0; i < 20; ++i) q.enqueue(i * 3);  // all key 0
+    REQUIRE(q.size() == 20);
+    for (int i = 0; i < 20; ++i) {
+        REQUIRE(*q.dequeue() == i * 3);
+    }
+    REQUIRE(q.empty());
+}
+
+TEST_CASE("StarvationPrevention: max_group_size 0 with two interleaved keys drains first group before second", "[StarvationPrevention]") {
+    QueueCap q(mod3, 0);
+    for (int i = 0; i < 10; ++i) {
+        q.enqueue(i * 3);      // key 0
+        q.enqueue(i * 3 + 1);  // key 1
+    }
+    // key-0 group arrived first, drains completely before key-1
+    for (int i = 0; i < 10; ++i) REQUIRE(*q.dequeue() == i * 3);
+    for (int i = 0; i < 10; ++i) REQUIRE(*q.dequeue() == i * 3 + 1);
+    REQUIRE(q.empty());
+}
