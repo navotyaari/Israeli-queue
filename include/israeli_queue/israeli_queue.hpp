@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <unordered_map>
@@ -71,8 +72,9 @@ public:
             group->elem_tail       = node;
             ++group->size;
         } else {
-            ElementNode* node      = new ElementNode(std::move(value));
-            GroupNode*   group     = new GroupNode(std::move(key), node);
+            std::unique_ptr<ElementNode> node_guard(new ElementNode(std::move(value)));
+            GroupNode* group = new GroupNode(std::move(key), node_guard.get());
+            node_guard.release();
             GroupNode*   prev_tail = group_tail_;
             if (group_tail_) {
                 group_tail_->next_group = group;
