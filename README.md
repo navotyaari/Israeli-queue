@@ -16,7 +16,7 @@ include/israeli_queue/israeli_queue.hpp  →  your project's include path
 include(FetchContent)
 FetchContent_Declare(
     israeli_queue
-    GIT_REPOSITORY https://github.com/NavotYaari/israelic_queue.git
+    GIT_REPOSITORY https://github.com/NavotYaari/israeli-queue.git
     GIT_TAG        main
 )
 # Disable the library's own tests and benchmarks
@@ -115,7 +115,3 @@ ctest --test-dir build        # run tests
 ```
 
 Requires CMake 3.14+, a C++17 compiler, and internet access on first configure (FetchContent downloads Catch2 and nanobench).
-
-## License
-
-MIT
