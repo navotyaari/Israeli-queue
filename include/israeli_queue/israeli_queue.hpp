@@ -71,15 +71,28 @@ public:
             group->elem_tail       = node;
             ++group->size;
         } else {
-            ElementNode* node  = new ElementNode(std::move(value));
-            GroupNode*   group = new GroupNode(std::move(key), node);
+            ElementNode* node      = new ElementNode(std::move(value));
+            GroupNode*   group     = new GroupNode(std::move(key), node);
+            GroupNode*   prev_tail = group_tail_;
             if (group_tail_) {
                 group_tail_->next_group = group;
             } else {
                 group_head_ = group;
             }
-            group_tail_          = group;
-            group_index_[group->key] = group;
+            group_tail_ = group;
+            try {
+                group_index_[group->key] = group;
+            } catch (...) {
+                if (prev_tail) {
+                    prev_tail->next_group = nullptr;
+                } else {
+                    group_head_ = nullptr;
+                }
+                group_tail_ = prev_tail;
+                delete group->elem_head;
+                delete group;
+                throw;
+            }
         }
         ++total_size_;
     }
