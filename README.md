@@ -80,7 +80,7 @@ iq::IsraeliQueue<Task, decltype(key)> q(key, /*max_group_size=*/10);
 | | Average | Worst case |
 |---|---|---|
 | `enqueue` | O(1) | O(n) — hash rehash |
-| `dequeue` / `pop` | O(1) | O(n) — hash rehash |
+| `dequeue` / `pop` | O(1) | O(n) — hash collision |
 | Space | O(n + g) | — |
 
 `n` = total elements, `g` = number of live groups.
