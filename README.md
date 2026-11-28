@@ -57,8 +57,11 @@ while (!q.empty()) {
 Pass a `max_group_size` to cap how many elements can join any one group. Once full, the next same-key element starts a new group at the back, bounding how long any task can be delayed.
 
 ```cpp
-// Groups cap at 10 elements. A task at the back is served
-// within K * 10 dequeues (K = number of active groups ahead).
+// Groups cap at 10 elements. An element that starts a new group at the
+// tail is served within K * 10 dequeues, where K is the number of groups
+// ahead at the moment of that enqueue. Groups ahead may still grow to
+// their cap after that point; the bound uses max_group_size, not their
+// current size.
 iq::IsraeliQueue<Task, decltype(key)> q(key, /*max_group_size=*/10);
 ```
 
